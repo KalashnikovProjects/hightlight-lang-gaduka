@@ -14,9 +14,9 @@ Remove leftover log statements.
 
 ### New features
 
-The `globalCompletion` completion source (included in the language support returned from `python()`) completes standard Python globals and keywords.
+The `globalCompletion` completion source (included in the language support returned from `gaduka()`) completes standard Python globals and keywords.
 
-Export a `localCompletionSource` function that completes locally defined variables. Included in the support extensions returned from `python()`.
+Export a `localCompletionSource` function that completes locally defined variables. Included in the support extensions returned from `gaduka()`.
 
 ## 6.0.4 (2022-10-24)
 

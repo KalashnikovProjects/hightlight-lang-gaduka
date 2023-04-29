@@ -18,7 +18,7 @@ function indentBody(context: TreeIndentContext, node: SyntaxNode) {
   // A normally deindenting keyword that appears at a higher
   // indentation than the block should probably be handled by the next
   // level
-  if (/^\s*(else:|elif |except |finally:)/.test(context.textAfter) && context.lineIndent(context.pos, -1) > base)
+  if (/^\s*(иначе:|иначе если )/.test(context.textAfter) && context.lineIndent(context.pos, -1) > base)
     return null
   return base + context.unit
 }
@@ -27,17 +27,13 @@ function indentBody(context: TreeIndentContext, node: SyntaxNode) {
 /// parser](https://github.com/lezer-parser/python), extended with
 /// highlighting and indentation information.
 export const pythonLanguage = LRLanguage.define({
-  name: "python",
+  name: "gaduka",
   parser: parser.configure({
     props: [
       indentNodeProp.add({
         Body: context => indentBody(context, context.node) ?? context.continue(),
-        IfStatement: cx => /^\s*(else:|elif )/.test(cx.textAfter) ? cx.baseIndent : cx.continue(),
-        TryStatement: cx => /^\s*(except |finally:|else:)/.test(cx.textAfter) ? cx.baseIndent : cx.continue(),
-        "TupleExpression ComprehensionExpression ParamList ArgList ParenthesizedExpression": delimitedIndent({closing: ")"}),
-        "DictionaryExpression DictionaryComprehensionExpression SetExpression SetComprehensionExpression": delimitedIndent({closing: "}"}),
-        "ArrayExpression ArrayComprehensionExpression": delimitedIndent({closing: "]"}),
-        "String FormatString": () => null,
+        IfStatement: cx => /^\s*(иначе:|иначе если )/.test(cx.textAfter) ? cx.baseIndent : cx.continue(),
+        TryStatement: cx => cx.continue(),
         Script: context => {
           if (context.pos + /\s*/.exec(context.textAfter)![0].length >= context.node.to) {
             let endBody = null
@@ -55,7 +51,7 @@ export const pythonLanguage = LRLanguage.define({
         }
       }),
       foldNodeProp.add({
-        "ArrayExpression DictionaryExpression SetExpression TupleExpression": foldInside,
+        "": foldInside,
         Body: (node, state) => ({from: node.from + 1, to: node.to - (node.to == state.doc.length ? 0 : 1)})
       })
     ],
@@ -67,12 +63,12 @@ export const pythonLanguage = LRLanguage.define({
                        "F", "FR", "RF", "R", "U", "B", "BR", "RB"]
     },
     commentTokens: {line: "#"},
-    indentOnInput: /^\s*([\}\]\)]|else:|elif |except |finally:)$/
+    indentOnInput: /^\s*([\}\]\)]|иначе:|иначе если )$/
   }
 })
 
-/// Python language support.
-export function python() {
+/// gaduka language support.
+export function gaduka() {
   return new LanguageSupport(pythonLanguage, [
     pythonLanguage.data.of({autocomplete: localCompletionSource}),
     pythonLanguage.data.of({autocomplete: globalCompletion}),

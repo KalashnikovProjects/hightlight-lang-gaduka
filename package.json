@@ -1,10 +1,10 @@
 {
-  "name": "@codemirror/lang-python",
+  "name": "@codemirror/lang-gaduka",
   "version": "6.1.2",
-  "description": "Python language support for the CodeMirror code editor",
+  "description": "Gaduka language support for the CodeMirror code editor",
   "scripts": {
     "test": "cm-runtests",
-    "prepare": "cm-buildhelper src/python.ts"
+    "prepare": "cm-buildhelper src/gaduka.ts"
   },
   "keywords": [
     "editor",
@@ -31,7 +31,8 @@
     "@lezer/python": "^1.1.4"
   },
   "devDependencies": {
-    "@codemirror/buildhelper": "^0.1.0"
+    "@codemirror/buildhelper": "^0.1.0",
+    "@types/node": "^18.16.3"
   },
   "repository": {
     "type": "git",

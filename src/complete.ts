@@ -12,6 +12,11 @@ const ScopeNodes = new Set([
   "ForStatement", "MatchClause"
 ])
 
+type commands = "добавить текст" | "добавить изображение" | "добавить элемент" | "убрать элемент" |
+    "удалить элемент" | "расширить список" | "удалить ключ" | "обрезать изображение" | "сжать изображение" |
+    "повернуть изображение" | "отразить изображение" | "наложить эффект" | "наложить текст" | "наложить картинку" |
+    "наложить линию" | "наложить многоугольник" | "наложить прямоугольник" | "наложить круг";
+
 function defID(type: string) {
   return (node: SyntaxNodeRef, def: (node: SyntaxNodeRef, type: string) => void, outer: boolean) => {
     if (outer) return false
@@ -106,82 +111,62 @@ export function localCompletionSource(context: CompletionContext): CompletionRes
 }
 
 const globals: readonly Completion[] = [
-  "__annotations__", "__builtins__", "__debug__", "__doc__", "__import__", "__name__",
-  "__loader__", "__package__", "__spec__",
-  "False", "None", "True"
+  "Верно", "Ничего", "Неверно"
 ].map(n => ({label: n, type: "constant"})).concat([
-  "ArithmeticError", "AssertionError", "AttributeError", "BaseException", "BlockingIOError",
-  "BrokenPipeError", "BufferError", "BytesWarning", "ChildProcessError", "ConnectionAbortedError",
-  "ConnectionError", "ConnectionRefusedError", "ConnectionResetError", "DeprecationWarning",
-  "EOFError", "Ellipsis", "EncodingWarning", "EnvironmentError", "Exception", "FileExistsError",
-  "FileNotFoundError", "FloatingPointError", "FutureWarning", "GeneratorExit", "IOError",
-  "ImportError", "ImportWarning", "IndentationError", "IndexError", "InterruptedError",
-  "IsADirectoryError", "KeyError", "KeyboardInterrupt", "LookupError", "MemoryError",
-  "ModuleNotFoundError", "NameError", "NotADirectoryError", "NotImplemented", "NotImplementedError",
-  "OSError", "OverflowError", "PendingDeprecationWarning", "PermissionError", "ProcessLookupError",
-  "RecursionError", "ReferenceError", "ResourceWarning", "RuntimeError", "RuntimeWarning",
-  "StopAsyncIteration", "StopIteration", "SyntaxError", "SyntaxWarning", "SystemError",
-  "SystemExit", "TabError", "TimeoutError", "TypeError", "UnboundLocalError", "UnicodeDecodeError",
-  "UnicodeEncodeError", "UnicodeError", "UnicodeTranslateError", "UnicodeWarning", "UserWarning",
-  "ValueError", "Warning", "ZeroDivisionError"
 ].map(n => ({label: n, type: "type"}))).concat([
-  "bool", "bytearray", "bytes", "classmethod", "complex", "float", "frozenset", "int", "list",
-  "map", "memoryview", "object", "range", "set", "staticmethod", "str", "super", "tuple", "type"
+  "копия", "словарь", "десятичная_дробь", "диапазон", "число", "список",
+  "Ничего", "пронумеровать", "кортеж", "тип"
 ].map(n => ({label: n, type: "class"}))).concat([
-  "abs", "aiter", "all", "anext", "any", "ascii", "bin", "breakpoint", "callable", "chr",
-  "compile", "delattr", "dict", "dir", "divmod", "enumerate", "eval", "exec", "exit", "filter",
-  "format", "getattr", "globals", "hasattr", "hash", "help", "hex", "id", "input", "isinstance",
-  "issubclass", "iter", "len", "license", "locals", "max", "min", "next", "oct", "open",
-  "ord", "pow", "print", "property", "quit", "repr", "reversed", "round", "setattr", "slice",
-  "sorted", "sum", "vars", "zip"
+  "модуль", "корень", "округлить", "все", "любой", "сумма", "длина", "наибольшее", "все_элементы",
+  "наименьшее", "отсортировать", "случайное_число", "случайный_элемент", "разделить_строку",
 ].map(n => ({label: n, type: "function"})))
 
 export const snippets: readonly Completion[] = [
-  snip("def ${name}(${params}):\n\t${}", {
-    label: "def",
-    detail: "function",
-    type: "keyword"
-  }),
-  snip("for ${name} in ${collection}:\n\t${}", {
+  // snip("def ${name}(${params}):\n\t${}", {
+  //   label: "def",
+  //   detail: "function",
+  //   type: "keyword"
+  // }),
+  snip("повтор ${name} раз:\n\t${}", {
     label: "for",
     detail: "loop",
     type: "keyword"
   }),
-  snip("while ${}:\n\t${}", {
+  snip("пока ${}:\n\t${}", {
     label: "while",
     detail: "loop",
     type: "keyword"
   }),
-  snip("try:\n\t${}\nexcept ${error}:\n\t${}", {
-    label: "try",
-    detail: "/ except block",
-    type: "keyword"
-  }),
-  snip("if ${}:\n\t\n", {
+  // snip("try:\n\t${}\nexcept ${error}:\n\t${}", {
+  //   label: "try",
+  //   detail: "/ except block",
+  //   type: "keyword"
+  // }),
+  snip("если ${}:\n\t\n", {
     label: "if",
     detail: "block",
     type: "keyword"
   }),
-  snip("if ${}:\n\t${}\nelse:\n\t${}", {
+  snip("если ${}:\n\t${}\nиначе:\n\t${}", {
     label: "if",
     detail: "/ else block",
     type: "keyword"
   }),
-  snip("class ${name}:\n\tdef __init__(self, ${params}):\n\t\t\t${}", {
+  snip("${commands}: ${}, ", {
     label: "class",
     detail: "definition",
     type: "keyword"
   }),
-  snip("import ${module}", {
-    label: "import",
-    detail: "statement",
-    type: "keyword"
-  }),
-  snip("from ${module} import ${names}", {
-    label: "from",
-    detail: "import",
-    type: "keyword"
-  })
+  // snip("import ${module}", {
+  //   label: "import",
+  //   detail: "statement",
+  //   type: "keyword"
+  // }),
+  // snip("from ${module} import ${names}", {
+  //   label: "from",
+  //   detail: "import",
+  //   type: "keyword"
+  // })
 ]
 
 /// Autocompletion for built-in Python globals and keywords.
