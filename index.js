@@ -1,10 +1,14 @@
-import { parser } from '@lezer/python';
-import { syntaxTree, LRLanguage, indentNodeProp, foldNodeProp, foldInside, LanguageSupport } from '@codemirror/language';
-import { NodeWeakMap, IterMode } from '@lezer/common';
-import { snippetCompletion, ifNotIn, completeFromList } from '@codemirror/autocomplete';
+'use strict';
 
-const cache = /*@__PURE__*/new NodeWeakMap();
-const ScopeNodes = /*@__PURE__*/new Set([
+Object.defineProperty(exports, '__esModule', { value: true });
+
+var python = require('@lezer/python');
+var language = require('@codemirror/language');
+var common = require('@lezer/common');
+var autocomplete = require('@codemirror/autocomplete');
+
+const cache = new common.NodeWeakMap();
+const ScopeNodes = new Set([
     "Script", "Body",
     "FunctionDefinition", "ClassDefinition", "LambdaExpression",
     "ForStatement", "MatchClause"
@@ -20,8 +24,8 @@ function defID(type) {
     };
 }
 const gatherCompletions = {
-    FunctionDefinition: /*@__PURE__*/defID("function"),
-    ClassDefinition: /*@__PURE__*/defID("class"),
+    FunctionDefinition: defID("function"),
+    ClassDefinition: defID("class"),
     ForStatement(node, def, outer) {
         if (outer)
             for (let child = node.node.firstChild; child; child = child.nextSibling) {
@@ -55,8 +59,8 @@ const gatherCompletions = {
             prev = child;
         }
     },
-    CapturePattern: /*@__PURE__*/defID("variable"),
-    AsPattern: /*@__PURE__*/defID("variable"),
+    CapturePattern: defID("variable"),
+    AsPattern: defID("variable"),
     __proto__: null
 };
 function getScope(doc, node) {
@@ -68,7 +72,7 @@ function getScope(doc, node) {
         let name = doc.sliceString(node.from, node.to);
         completions.push({ label: name, type });
     }
-    node.cursor(IterMode.IncludeAnonymous).iterate(node => {
+    node.cursor(common.IterMode.IncludeAnonymous).iterate(node => {
         if (node.name) {
             let gather = gatherCompletions[node.name];
             if (gather && gather(node, def, top) || !top && ScopeNodes.has(node.name))
@@ -90,7 +94,7 @@ const dontComplete = ["String", "FormatString", "Comment", "PropertyName"];
 /// Completion source that looks up locally defined names in
 /// Python code.
 function localCompletionSource(context) {
-    let inner = syntaxTree(context.state).resolveInner(context.pos, -1);
+    let inner = language.syntaxTree(context.state).resolveInner(context.pos, -1);
     if (dontComplete.indexOf(inner.name) > -1)
         return null;
     let isWord = inner.name == "VariableName" ||
@@ -108,12 +112,12 @@ function localCompletionSource(context) {
         validFor: Identifier
     };
 }
-const globals = /*@__PURE__*/[
+const globals = [
     "Верно", "Ничего", "Неверно"
-].map(n => ({ label: n, type: "constant" })).concat(/*@__PURE__*/[].map(n => ({ label: n, type: "type" }))).concat(/*@__PURE__*/[
+].map(n => ({ label: n, type: "constant" })).concat([].map(n => ({ label: n, type: "type" }))).concat([
     "копия", "словарь", "десятичная_дробь", "диапазон", "число", "список",
     "Ничего", "пронумеровать", "кортеж", "тип"
-].map(n => ({ label: n, type: "class" }))).concat(/*@__PURE__*/[
+].map(n => ({ label: n, type: "class" }))).concat([
     "модуль", "корень", "округлить", "все", "любой", "сумма", "длина", "наибольшее", "все_элементы",
     "наименьшее", "отсортировать", "случайное_число", "случайный_элемент", "разделить_строку",
 ].map(n => ({ label: n, type: "function" })));
@@ -123,12 +127,12 @@ const snippets = [
     //   detail: "function",
     //   type: "keyword"
     // }),
-    /*@__PURE__*/snippetCompletion("повтор ${name} раз:\n\t${}", {
+    autocomplete.snippetCompletion("повтор ${name} раз:\n\t${}", {
         label: "for",
         detail: "loop",
         type: "keyword"
     }),
-    /*@__PURE__*/snippetCompletion("пока ${}:\n\t${}", {
+    autocomplete.snippetCompletion("пока ${}:\n\t${}", {
         label: "while",
         detail: "loop",
         type: "keyword"
@@ -138,17 +142,17 @@ const snippets = [
     //   detail: "/ except block",
     //   type: "keyword"
     // }),
-    /*@__PURE__*/snippetCompletion("если ${}:\n\t\n", {
+    autocomplete.snippetCompletion("если ${}:\n\t\n", {
         label: "if",
         detail: "block",
         type: "keyword"
     }),
-    /*@__PURE__*/snippetCompletion("если ${}:\n\t${}\nиначе:\n\t${}", {
+    autocomplete.snippetCompletion("если ${}:\n\t${}\nиначе:\n\t${}", {
         label: "if",
         detail: "/ else block",
         type: "keyword"
     }),
-    /*@__PURE__*/snippetCompletion("${commands}: ${}, ", {
+    autocomplete.snippetCompletion("${commands}: ${}, ", {
         label: "class",
         detail: "definition",
         type: "keyword"
@@ -165,7 +169,7 @@ const snippets = [
     // })
 ];
 /// Autocompletion for built-in Python globals and keywords.
-const globalCompletion = /*@__PURE__*/ifNotIn(dontComplete, /*@__PURE__*/completeFromList(/*@__PURE__*/globals.concat(snippets)));
+const globalCompletion = autocomplete.ifNotIn(dontComplete, autocomplete.completeFromList(globals.concat(snippets)));
 
 function indentBody(context, node) {
     let base = context.lineIndent(node.from);
@@ -187,11 +191,11 @@ function indentBody(context, node) {
 /// A language provider based on the [Lezer Python
 /// parser](https://github.com/lezer-parser/python), extended with
 /// highlighting and indentation information.
-const pythonLanguage = /*@__PURE__*/LRLanguage.define({
+const pythonLanguage = language.LRLanguage.define({
     name: "python",
-    parser: /*@__PURE__*/parser.configure({
+    parser: python.parser.configure({
         props: [
-            /*@__PURE__*/indentNodeProp.add({
+            language.indentNodeProp.add({
                 Body: context => { var _a; return (_a = indentBody(context, context.node)) !== null && _a !== void 0 ? _a : context.continue(); },
                 IfStatement: cx => /^\s*(иначе:|иначе если )/.test(cx.textAfter) ? cx.baseIndent : cx.continue(),
                 TryStatement: cx => cx.continue(),
@@ -214,8 +218,8 @@ const pythonLanguage = /*@__PURE__*/LRLanguage.define({
                     return context.continue();
                 }
             }),
-            /*@__PURE__*/foldNodeProp.add({
-                "": foldInside,
+            language.foldNodeProp.add({
+                "": language.foldInside,
                 Body: (node, state) => ({ from: node.from + 1, to: node.to - (node.to == state.doc.length ? 0 : 1) })
             })
         ],
@@ -232,10 +236,13 @@ const pythonLanguage = /*@__PURE__*/LRLanguage.define({
 });
 /// Python language support.
 function gaduka() {
-    return new LanguageSupport(pythonLanguage, [
+    return new language.LanguageSupport(pythonLanguage, [
         pythonLanguage.data.of({ autocomplete: localCompletionSource }),
         pythonLanguage.data.of({ autocomplete: globalCompletion }),
     ]);
 }
 
-export { gaduka, globalCompletion, localCompletionSource, pythonLanguage };
+exports.gaduka = gaduka;
+exports.globalCompletion = globalCompletion;
+exports.localCompletionSource = localCompletionSource;
+exports.pythonLanguage = pythonLanguage;
