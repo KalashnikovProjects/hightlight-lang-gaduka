@@ -1,32 +1,23 @@
-import {parser} from "@lezer/python"
-import {SyntaxNode} from "@lezer/common"
-import {delimitedIndent, indentNodeProp, TreeIndentContext, 
-        foldNodeProp, foldInside, LRLanguage, LanguageSupport} from "@codemirror/language"
-import {globalCompletion, localCompletionSource} from "./complete"
-export {globalCompletion, localCompletionSource}
+const {parser} = require("@lezer/python");
+const {SyntaxNode} = require("@lezer/common");
+const {delimitedIndent, indentNodeProp, TreeIndentContext, 
+        foldNodeProp, foldInside, LRLanguage, LanguageSupport} = require("@codemirror/language");
+const {globalCompletion, localCompletionSource} = require("./complete");
 
-function indentBody(context: TreeIndentContext, node: SyntaxNode) {
+function indentBody(context, node) {
   let base = context.lineIndent(node.from)
   let line = context.lineAt(context.pos, -1), to = line.from + line.text.length
-  // Don't consider blank, deindented lines at the end of the
-  // block part of the block
   if (/^\s*($|#)/.test(line.text) &&
       context.node.to < to + 100 &&
       !/\S/.test(context.state.sliceDoc(to, context.node.to)) &&
       context.lineIndent(context.pos, -1) <= base)
     return null
-  // A normally deindenting keyword that appears at a higher
-  // indentation than the block should probably be handled by the next
-  // level
   if (/^\s*(иначе:|иначе если )/.test(context.textAfter) && context.lineIndent(context.pos, -1) > base)
     return null
   return base + context.unit
 }
 
-/// A language provider based on the [Lezer Python
-/// parser](https://github.com/lezer-parser/python), extended with
-/// highlighting and indentation information.
-export const pythonLanguage = LRLanguage.define({
+const pythonLanguage = LRLanguage.define({
   name: "gaduka",
   parser: parser.configure({
     props: [
@@ -37,7 +28,7 @@ export const pythonLanguage = LRLanguage.define({
         Script: context => {
           if (context.pos + /\s*/.exec(context.textAfter)![0].length >= context.node.to) {
             let endBody = null
-            for (let cur: SyntaxNode | null = context.node, to = cur.to;;) {
+            for (let cur = context.node, to = cur.to;;) {
               cur = cur.lastChild
               if (!cur || cur.to != to) break
               if (cur.type.name == "Body") endBody = cur
@@ -65,12 +56,13 @@ export const pythonLanguage = LRLanguage.define({
     commentTokens: {line: "#"},
     indentOnInput: /^\s*([\}\]\)]|иначе:|иначе если )$/
   }
-})
+});
 
-/// gaduka language support.
-export function gaduka() {
+function gaduka() {
   return new LanguageSupport(pythonLanguage, [
     pythonLanguage.data.of({autocomplete: localCompletionSource}),
     pythonLanguage.data.of({autocomplete: globalCompletion}),
-  ])
+  ]);
 }
+
+module.exports = { gaduka, globalCompletion, localCompletionSource };

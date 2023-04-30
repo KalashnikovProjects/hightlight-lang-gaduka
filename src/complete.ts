@@ -1,4 +1,5 @@
 import {NodeWeakMap, SyntaxNodeRef, SyntaxNode, IterMode} from "@lezer/common"
+
 import {Completion, CompletionContext, CompletionResult, completeFromList, ifNotIn,
         snippetCompletion as snip} from "@codemirror/autocomplete"
 import {syntaxTree} from "@codemirror/language"
